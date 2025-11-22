@@ -243,7 +243,7 @@ repository.
 
 > **Note:** this commit won't include the updated log with the most recent commit, which is fine.
 > The next time we ask you to commit, you'll update your `log.txt` file again and commit the updated log.
-
+ 
 ---
 
 ## Task 1 Recap
