@@ -35,21 +35,40 @@ public class StatementPrinter {
         final StringBuilder result = new StringBuilder(
                 "Statement for " + invoice.getCustomer() + System.lineSeparator());
 
+        volumeCredits = getTotalVolumeCredits(volumeCredits);
+        totalAmount = getTotalAmount(totalAmount);
+        for (Performance performance : invoice.getPerformances()) {
+            final Play play = plays.get(performance.getPlayID());
+
+            // print line for this order
+            result.append(String.format(
+                    "  %s: %s (%s seats)%n", play.getName(), usd(
+                            getAmount(performance, play)), performance.getAudience()));
+        }
+        result.append(String.format("Amount owed is %s%n", usd(totalAmount)));
+        result.append(String.format("You earned %s credits%n", volumeCredits));
+        return result.toString();
+    }
+
+    private int getTotalAmount(int totalAmount) {
         for (Performance performance : invoice.getPerformances()) {
             final Play play = plays.get(performance.getPlayID());
 
             final int thisAmount = getAmount(performance, play);
 
-            volumeCredits = getVolumeCredits(performance, volumeCredits, play);
-
-            // print line for this order
-            result.append(String.format(
-                    "  %s: %s (%s seats)%n", play.getName(), usd(getAmount(performance, play)), performance.getAudience()));
             totalAmount += thisAmount;
         }
-        result.append(String.format("Amount owed is %s%n", usd(totalAmount)));
-        result.append(String.format("You earned %s credits%n", volumeCredits));
-        return result.toString();
+        return totalAmount;
+    }
+
+    private int getTotalVolumeCredits(int volumeCredits) {
+        for (Performance performance : invoice.getPerformances()) {
+            final Play play = plays.get(performance.getPlayID());
+
+            volumeCredits = getVolumeCredits(performance, volumeCredits, play);
+
+        }
+        return volumeCredits;
     }
 
     private static String usd(int totalAmount) {
