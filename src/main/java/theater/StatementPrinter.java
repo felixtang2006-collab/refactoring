@@ -8,8 +8,8 @@ import java.util.Map;
  * This class generates a statement for a given invoice of performances.
  */
 public class StatementPrinter {
-    private Invoice invoice;
-    private Map<String, Play> plays;
+    private static Invoice invoice;
+    private static Map<String, Play> plays;
 
     public StatementPrinter(Invoice invoice, Map<String, Play> plays) {
         this.invoice = invoice;
@@ -43,7 +43,7 @@ public class StatementPrinter {
             // print line for this order
             result.append(String.format(
                     "  %s: %s (%s seats)%n", play.getName(), usd(
-                            getAmount(performance, play)), performance.getAudience()));
+                            getAmount(performance)), performance.getAudience()));
         }
         result.append(String.format("Amount owed is %s%n", usd(totalAmount)));
         result.append(String.format("You earned %s credits%n", volumeCredits));
@@ -51,24 +51,24 @@ public class StatementPrinter {
     }
 
     private int getTotalAmount(int totalAmount) {
+        int amount = 0;
         for (Performance performance : invoice.getPerformances()) {
-            final Play play = plays.get(performance.getPlayID());
+            final int thisAmount = getAmount(performance);
 
-            final int thisAmount = getAmount(performance, play);
-
-            totalAmount += thisAmount;
+            amount += thisAmount;
         }
-        return totalAmount;
+        return totalAmount + amount;
     }
 
     private int getTotalVolumeCredits(int volumeCredits) {
+        int credits = 0;
         for (Performance performance : invoice.getPerformances()) {
             final Play play = plays.get(performance.getPlayID());
 
-            volumeCredits = getVolumeCredits(performance, volumeCredits, play);
+            credits += getVolumeCredits(performance, volumeCredits, play);
 
         }
-        return volumeCredits;
+        return volumeCredits + credits;
     }
 
     private static String usd(int totalAmount) {
@@ -86,8 +86,9 @@ public class StatementPrinter {
         return volumeCredits + credits;
     }
 
-    private static int getAmount(Performance performance, Play play) {
+    private static int getAmount(Performance performance) {
         int thisAmount;
+        final Play play = getPlay(performance);
         switch (play.getType()) {
             case "tragedy":
                 thisAmount = Constants.TRAGEDY_BASE_AMOUNT;
@@ -109,5 +110,10 @@ public class StatementPrinter {
                 throw new RuntimeException(String.format("unknown type: %s", play.getType()));
         }
         return thisAmount;
+    }
+
+    private static Play getPlay(Performance performance) {
+        final Play play = plays.get(performance.getPlayID());
+        return play;
     }
 }
